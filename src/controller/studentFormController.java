@@ -13,6 +13,7 @@ import model.Student;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 
@@ -109,6 +110,24 @@ public class studentFormController implements Initializable {
     }
 
     public void btnSearch(ActionEvent actionEvent) {
+        try {
+            Connection connection = DbConnection.getInstance().getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM Student WHERE student_id=?");
+            preparedStatement.setObject(1,txtStudentID.getText());
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()){
+                txtStudentName.setText(resultSet.getString(2));
+                txtEmail.setText(resultSet.getString(3));
+                txtContact.setText(resultSet.getString(4));
+                txtAddress.setText(resultSet.getString(5));
+                txtNic.setText(resultSet.getString(6));
+            }
+
+
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
