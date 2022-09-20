@@ -87,6 +87,25 @@ public class studentFormController implements Initializable {
     }
 
     public void btnDelete(ActionEvent actionEvent) {
+        Connection connection = null;
+
+        try {
+            connection = DbConnection.getInstance().getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM Student WHERE student_id=?");
+            preparedStatement.setObject(1,txtStudentID.getText());
+            int delete = preparedStatement.executeUpdate();
+            if (delete > 0){
+                new Alert(Alert.AlertType.CONFIRMATION,"Deleted",ButtonType.OK).show();
+            }else {
+                new Alert(Alert.AlertType.WARNING,"Try again",ButtonType.OK).show();
+            }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+
+
     }
 
     public void btnSearch(ActionEvent actionEvent) {
