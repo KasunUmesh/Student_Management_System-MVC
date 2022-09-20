@@ -2,19 +2,24 @@ package controller;
 
 import Db.DbConnection;
 import com.jfoenix.controls.JFXTextField;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import model.Student;
+import view.tm.studentTm;
 
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 public class studentFormController implements Initializable {
@@ -24,7 +29,7 @@ public class studentFormController implements Initializable {
     public JFXTextField txtContact;
     public JFXTextField txtAddress;
     public JFXTextField txtNic;
-    public TableView tblStudent;
+    public TableView<studentTm> tblStudent;
     public TableColumn colStuID;
     public TableColumn colStuName;
     public TableColumn colEmail;
@@ -34,6 +39,24 @@ public class studentFormController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        colStuID.setCellValueFactory(new PropertyValueFactory<>("studentID"));
+        colStuName.setCellValueFactory(new PropertyValueFactory<>("studentName"));
+        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        colContact.setCellValueFactory(new PropertyValueFactory<>("contact"));
+        colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
+        colNic.setCellValueFactory(new PropertyValueFactory<>("nic"));
+
+        loadAllStudent();
+
+        tblStudent.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            txtStudentID.setText(newValue.getStudentID());
+            txtStudentName.setText(newValue.getStudentName());
+            txtEmail.setText(newValue.getEmail());
+            txtContact.setText(newValue.getContact());
+            txtContact.setText(newValue.getAddress());
+            txtNic.setText(newValue.getNic());
+        });
 
     }
 
@@ -53,6 +76,7 @@ public class studentFormController implements Initializable {
             int save = preparedStatement.executeUpdate();
             if (save > 0){
                 new Alert(Alert.AlertType.CONFIRMATION, "Saved", ButtonType.OK).show();
+                loadAllStudent();
             }else {
                 new Alert(Alert.AlertType.WARNING, "Try Again", ButtonType.OK).show();
             }
@@ -77,6 +101,7 @@ public class studentFormController implements Initializable {
             int update = preparedStatement.executeUpdate();
             if (update > 0){
                 new Alert(Alert.AlertType.CONFIRMATION,"Updated",ButtonType.OK).show();
+                loadAllStudent();
             }else {
                 new Alert(Alert.AlertType.WARNING,"Try agian",ButtonType.OK).show();
             }
@@ -97,6 +122,7 @@ public class studentFormController implements Initializable {
             int delete = preparedStatement.executeUpdate();
             if (delete > 0){
                 new Alert(Alert.AlertType.CONFIRMATION,"Deleted",ButtonType.OK).show();
+                loadAllStudent();
             }else {
                 new Alert(Alert.AlertType.WARNING,"Try again",ButtonType.OK).show();
             }
@@ -123,6 +149,37 @@ public class studentFormController implements Initializable {
                 txtAddress.setText(resultSet.getString(5));
                 txtNic.setText(resultSet.getString(6));
             }
+
+
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void loadAllStudent(){
+        ArrayList<Student> students = new ArrayList<>();
+        ObservableList<studentTm> observableList = FXCollections.observableArrayList();
+
+        try {
+            Connection connection = DbConnection.getInstance().getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM Student");
+            ResultSet rst = preparedStatement.executeQuery();
+
+            while (rst.next()){
+                students.add(new Student(
+                        rst.getString(1),
+                        rst.getString(2),
+                        rst.getString(3),
+                        rst.getString(4),
+                        rst.getString(5),
+                        rst.getString(6)
+                ));
+            }
+            for (Student stu : students){
+                observableList.add(new studentTm(stu.getStudentID(), stu.getStudentName(), stu.getEmail(),stu.getContact(), stu.getAddress(),stu.getNic()));
+
+            }
+            tblStudent.setItems(observableList);
 
 
         } catch (SQLException | ClassNotFoundException e) {
