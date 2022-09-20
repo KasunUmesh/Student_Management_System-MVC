@@ -5,7 +5,7 @@ public class Student {
     private String studentName;
     private String email;
     private String contact;
-    private String address
+    private String address;
     private String nic;
 
     public Student() {

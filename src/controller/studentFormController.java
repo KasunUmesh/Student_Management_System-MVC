@@ -1,11 +1,22 @@
 package controller;
 
+import Db.DbConnection;
 import com.jfoenix.controls.JFXTextField;
 import javafx.event.ActionEvent;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import model.Student;
 
-public class studentFormController {
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ResourceBundle;
+
+public class studentFormController implements Initializable {
     public JFXTextField txtStudentID;
     public JFXTextField txtStudentName;
     public JFXTextField txtEmail;
@@ -20,7 +31,35 @@ public class studentFormController {
     public TableColumn colAddress;
     public TableColumn colNic;
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+    }
+
     public void btnSave(ActionEvent actionEvent) {
+        Student student = new Student(txtStudentID.getText(),txtStudentName.getText(),txtEmail.getText(),txtContact.getText(),txtAddress.getText(),txtNic.getText());
+
+        try {
+            Connection connection = DbConnection.getInstance().getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO student" + " VALUES(?,?,?,?,?,?)");
+            preparedStatement.setObject(1,student.getStudentID());
+            preparedStatement.setObject(2,student.getStudentName());
+            preparedStatement.setObject(3,student.getEmail());
+            preparedStatement.setObject(4,student.getContact());
+            preparedStatement.setObject(5,student.getAddress());
+            preparedStatement.setObject(6,student.getNic());
+
+            int save = preparedStatement.executeUpdate();
+            if (save > 0){
+                new Alert(Alert.AlertType.CONFIRMATION, "Saved", ButtonType.OK).show();
+            }else {
+                new Alert(Alert.AlertType.WARNING, "Try Again", ButtonType.OK).show();
+            }
+
+
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void btnUpdate(ActionEvent actionEvent) {
@@ -31,4 +70,7 @@ public class studentFormController {
 
     public void btnSearch(ActionEvent actionEvent) {
     }
+
+
+
 }
